@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from loguru import logger
 
-from app.api.endpoints import geofence
+from app.api.endpoints import geofence, buildings
 from app.config import settings
 from app.logging_config import LoggingConfig
 
@@ -63,6 +63,7 @@ class GeofencingAPI:
         """Register API routes."""
         # Include routers from different modules
         self.app.include_router(geofence.router)
+        self.app.include_router(buildings.router)
         
         # Add a simple health check endpoint
         @self.app.get("/health", tags=["health"])
