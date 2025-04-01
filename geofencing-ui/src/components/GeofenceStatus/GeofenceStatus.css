@@ -1,0 +1,100 @@
+.geofence-status {
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: flex-start;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+  }
+  
+  .geofence-status.within {
+    background-color: #d4edda;
+    border-left: 5px solid #28a745;
+  }
+  
+  .geofence-status.outside {
+    background-color: #f8f9fa;
+    border-left: 5px solid #6c757d;
+  }
+  
+  .geofence-status.loading {
+    background-color: #fff3cd;
+    border-left: 5px solid #ffc107;
+  }
+  
+  .geofence-status.error {
+    background-color: #f8d7da;
+    border-left: 5px solid #dc3545;
+  }
+  
+  .geofence-status.waiting {
+    background-color: #e2e3e5;
+    border-left: 5px solid #6c757d;
+  }
+  
+  .status-icon {
+    width: 32px;
+    height: 32px;
+    margin-right: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background-size: 18px;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  
+  .within-icon {
+    background-color: #28a745;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z'/%3E%3C/svg%3E");
+  }
+  
+  .outside-icon {
+    background-color: #6c757d;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z'/%3E%3C/svg%3E");
+  }
+  
+  .loading-icon {
+    background-color: #ffc107;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z'/%3E%3C/svg%3E");
+    animation: spin 2s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .error-icon {
+    background-color: #dc3545;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z'/%3E%3C/svg%3E");
+  }
+  
+  .waiting-icon {
+    background-color: #6c757d;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z'/%3E%3C/svg%3E");
+  }
+  
+  .status-text {
+    flex-grow: 1;
+  }
+  
+  .status-text h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.25rem;
+  }
+  
+  .nearest-building {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 4px;
+  }
+  
+  .timestamp {
+    margin-top: 15px;
+    font-size: 0.8rem;
+    color: #6c757d;
+  }
