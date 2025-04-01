@@ -48,27 +48,113 @@ class ApiService {
   }
   
   /**
-   * Check if a user is within geofence of any buildings
+   * Check if a user is within geofence of predefined buildings
    * 
    * @param {Object} coordinates - User coordinates
    * @param {number} coordinates.latitude - User latitude
    * @param {number} coordinates.longitude - User longitude
-   * @param {number} [radiusMeters] - Radius in meters to check for geofence
+   * @param {string} [buildingId] - Optional ID of specific building to check
    * @returns {Promise<Object>} Geofence check response
    */
-  async checkGeofence(coordinates, radiusMeters = config.geofence.defaultRadiusMeters) {
+  async checkGeofence(coordinates, buildingId = null) {
     try {
-      const response = await this.client.post('/geofence/check', {
+      const url = '/geofence/check';
+      const data = {
         user_location: {
           latitude: coordinates.latitude,
           longitude: coordinates.longitude,
-        },
-        radius_meters: radiusMeters,
-      });
+        }
+      };
       
+      // If buildingId is provided, add it as a query parameter
+      const config = {};
+      if (buildingId) {
+        config.params = { building_id: buildingId };
+      }
+      
+      const response = await this.client.post(url, data, config);
       return response.data;
     } catch (error) {
       Logger.error('Failed to check geofence: {0}', error.message);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get all predefined buildings
+   * 
+   * @returns {Promise<Object>} List of buildings
+   */
+  async getBuildings() {
+    try {
+      const response = await this.client.get('/buildings');
+      return response.data;
+    } catch (error) {
+      Logger.error('Failed to get buildings: {0}', error.message);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get a specific building by ID
+   * 
+   * @param {string} buildingId - ID of the building to get
+   * @returns {Promise<Object>} Building details
+   */
+  async getBuilding(buildingId) {
+    try {
+      const response = await this.client.get(`/buildings/${buildingId}`);
+      return response.data;
+    } catch (error) {
+      Logger.error('Failed to get building {0}: {1}', buildingId, error.message);
+      throw error;
+    }
+  }
+  
+  /**
+   * Create a new building
+   * 
+   * @param {Object} buildingData - Building data
+   * @returns {Promise<Object>} Created building
+   */
+  async createBuilding(buildingData) {
+    try {
+      const response = await this.client.post('/buildings', buildingData);
+      return response.data;
+    } catch (error) {
+      Logger.error('Failed to create building: {0}', error.message);
+      throw error;
+    }
+  }
+  
+  /**
+   * Update an existing building
+   * 
+   * @param {string} buildingId - ID of the building to update
+   * @param {Object} buildingData - New building data
+   * @returns {Promise<Object>} Updated building
+   */
+  async updateBuilding(buildingId, buildingData) {
+    try {
+      const response = await this.client.put(`/buildings/${buildingId}`, buildingData);
+      return response.data;
+    } catch (error) {
+      Logger.error('Failed to update building {0}: {1}', buildingId, error.message);
+      throw error;
+    }
+  }
+  
+  /**
+   * Delete a building
+   * 
+   * @param {string} buildingId - ID of the building to delete
+   * @returns {Promise<void>}
+   */
+  async deleteBuilding(buildingId) {
+    try {
+      await this.client.delete(`/buildings/${buildingId}`);
+    } catch (error) {
+      Logger.error('Failed to delete building {0}: {1}', buildingId, error.message);
       throw error;
     }
   }

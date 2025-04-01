@@ -1,18 +1,15 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Union
 from datetime import datetime
 
-from app.models.location import Coordinates, Building
+from app.models.location import Coordinates
+from app.models.building import PredefinedBuilding
 
 
 class GeofenceRequest(BaseModel):
     """Request model for geofence check."""
     user_location: Coordinates
-    radius_meters: Optional[float] = Field(
-        None, 
-        description="Radius in meters to check for nearby buildings"
-    )
-
+    
 
 class GeofenceStatus(BaseModel):
     """Status of a user in relation to a geofence."""
@@ -24,7 +21,10 @@ class GeofenceStatus(BaseModel):
         ..., 
         description="Distance in meters from the user to the building"
     )
-    building: Building
+    building: PredefinedBuilding = Field(
+        ...,
+        description="The building being checked for geofence"
+    )
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 

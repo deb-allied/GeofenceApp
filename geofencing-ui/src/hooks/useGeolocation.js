@@ -1,14 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import config from '../config';
 import Logger from '../utils/logger';
 
 /**
  * Custom hook for accessing and tracking the user's geolocation
+ * with throttling to reduce update frequency
  * 
  * @param {Object} [options] - Geolocation options
  * @param {boolean} [options.highAccuracy=true] - Whether to use high accuracy mode
- * @param {number} [options.timeout=5000] - Timeout in milliseconds
- * @param {number} [options.maximumAge=10000] - Maximum cache age in milliseconds
+ * @param {number} [options.timeout=1000] - Timeout in milliseconds
+ * @param {number} [options.maximumAge=300000] - Maximum cache age in milliseconds
+ * @param {number} [options.throttleMs=150000] - Throttle updates to this frequency in milliseconds
  * @param {boolean} [options.enableTracking=false] - Whether to enable continuous tracking
  * @returns {Object} Geolocation state and control functions
  */
@@ -18,6 +20,7 @@ const useGeolocation = (options = {}) => {
     highAccuracy = config.locationTracking.highAccuracy,
     timeout = config.locationTracking.timeout,
     maximumAge = config.locationTracking.maximumAge,
+    throttleMs = config.locationTracking.throttleMs,
     enableTracking = false,
   } = options;
 
@@ -26,33 +29,91 @@ const useGeolocation = (options = {}) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [tracking, setTracking] = useState(enableTracking);
-  const [watchId, setWatchId] = useState(null);
+  
+  // Use ref for watch ID to maintain it across renders
+  const watchIdRef = useRef(null);
+  
+  // Refs for throttling
+  const lastUpdateTimeRef = useRef(0);
+  const lastPositionRef = useRef(null);
+  const throttleTimeoutRef = useRef(null);
+
+  /**
+   * Process a position update with throttling
+   * @param {GeolocationPosition} position - Position object from Geolocation API
+   */
+  const processPositionUpdate = useCallback((position) => {
+    const now = Date.now();
+    lastPositionRef.current = position;
+    
+    // If we haven't updated recently, update immediately
+    if (now - lastUpdateTimeRef.current >= throttleMs) {
+      const { latitude, longitude, accuracy } = position.coords;
+      const timestamp = position.timestamp;
+      
+      Logger.debug(
+        'Geolocation update: lat={0}, lng={1}, accuracy={2}m', 
+        latitude.toFixed(6), 
+        longitude.toFixed(6), 
+        Math.round(accuracy)
+      );
+      
+      setLocation({
+        latitude,
+        longitude,
+        accuracy,
+        timestamp,
+      });
+      
+      lastUpdateTimeRef.current = now;
+      setLoading(false);
+      setError(null);
+    } else {
+      // Otherwise, schedule an update for later if one isn't already scheduled
+      if (!throttleTimeoutRef.current) {
+        const delay = throttleMs - (now - lastUpdateTimeRef.current);
+        
+        Logger.debug('Throttling position update. Next update in {0}ms', delay);
+        
+        throttleTimeoutRef.current = setTimeout(() => {
+          const lastPosition = lastPositionRef.current;
+          if (lastPosition) {
+            const { latitude, longitude, accuracy } = lastPosition.coords;
+            const timestamp = lastPosition.timestamp;
+            
+            Logger.debug(
+              'Throttled geolocation update: lat={0}, lng={1}, accuracy={2}m', 
+              latitude.toFixed(6), 
+              longitude.toFixed(6), 
+              Math.round(accuracy)
+            );
+            
+            setLocation({
+              latitude,
+              longitude,
+              accuracy,
+              timestamp,
+            });
+            
+            lastUpdateTimeRef.current = Date.now();
+          }
+          
+          throttleTimeoutRef.current = null;
+        }, delay);
+      }
+      
+      // Still update the loading state
+      setLoading(false);
+    }
+  }, [throttleMs]);
 
   /**
    * Success handler for geolocation API
    * @param {GeolocationPosition} position - Position object from Geolocation API
    */
   const handleSuccess = useCallback((position) => {
-    const { latitude, longitude, accuracy } = position.coords;
-    const timestamp = position.timestamp;
-    
-    Logger.debug(
-      'Geolocation update: lat={0}, lng={1}, accuracy={2}m', 
-      latitude.toFixed(6), 
-      longitude.toFixed(6), 
-      Math.round(accuracy)
-    );
-    
-    setLocation({
-      latitude,
-      longitude,
-      accuracy,
-      timestamp,
-    });
-    
-    setLoading(false);
-    setError(null);
-  }, []);
+    processPositionUpdate(position);
+  }, [processPositionUpdate]);
 
   /**
    * Error handler for geolocation API
@@ -108,12 +169,16 @@ const useGeolocation = (options = {}) => {
       return;
     }
     
-    if (watchId !== null) {
-      // Already tracking
-      return;
+    // Clear any existing watch
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
     }
     
-    Logger.info('Starting position tracking...');
+    // Reset throttling state
+    lastUpdateTimeRef.current = 0;
+    
+    Logger.info('Starting position tracking with reduced frequency...');
     
     setLoading(true);
     setTracking(true);
@@ -128,20 +193,29 @@ const useGeolocation = (options = {}) => {
       }
     );
     
-    setWatchId(id);
-  }, [handleSuccess, handleError, highAccuracy, timeout, maximumAge, watchId]);
+    watchIdRef.current = id;
+    Logger.debug('Started geolocation watch with ID: {0}', id);
+  }, [handleSuccess, handleError, highAccuracy, timeout, maximumAge]);
 
   /**
    * Stop tracking the user's position
    */
   const stopTracking = useCallback(() => {
-    if (watchId !== null) {
-      Logger.info('Stopping position tracking...');
-      navigator.geolocation.clearWatch(watchId);
-      setWatchId(null);
+    if (watchIdRef.current !== null) {
+      Logger.info('Stopping position tracking with watch ID: {0}...', watchIdRef.current);
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+      
+      // Clear any pending throttled updates
+      if (throttleTimeoutRef.current) {
+        clearTimeout(throttleTimeoutRef.current);
+        throttleTimeoutRef.current = null;
+      }
+      
       setTracking(false);
+      Logger.debug('Position tracking stopped');
     }
-  }, [watchId]);
+  }, []);
 
   // Effect to handle automatic tracking
   useEffect(() => {
@@ -149,13 +223,20 @@ const useGeolocation = (options = {}) => {
       startTracking();
     }
     
+    // Clean up when component unmounts
     return () => {
-      // Clean up when component unmounts
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
+      if (watchIdRef.current !== null) {
+        Logger.debug('Cleaning up geolocation watch on unmount');
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+      
+      if (throttleTimeoutRef.current) {
+        clearTimeout(throttleTimeoutRef.current);
+        throttleTimeoutRef.current = null;
       }
     };
-  }, [enableTracking, tracking, startTracking, watchId]);
+  }, [enableTracking, tracking, startTracking]);
 
   return {
     location,

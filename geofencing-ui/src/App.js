@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Map from './components/Map';
 import GeofenceStatus from './components/GeofenceStatus';
 import LocationTracker from './components/LocationTracker';
+import BuildingManager from './components/BuildingManager';
 import config from './config';
 import Logger from './utils/logger';
 import './App.css';
@@ -15,8 +16,8 @@ const App = () => {
   const [geofenceLoading, setGeofenceLoading] = useState(false);
   const [geofenceError, setGeofenceError] = useState(null);
   
-  // State for radius
-  const [radiusMeters, setRadiusMeters] = useState(config.geofence.defaultRadiusMeters);
+  // State for selected building
+  const [selectedBuildingId, setSelectedBuildingId] = useState(null);
   
   // Handle location updates from LocationTracker
   const handleLocationUpdate = (location) => {
@@ -37,10 +38,9 @@ const App = () => {
     ).length;
     
     Logger.info(
-      'Geofence updated: {0} of {1} buildings within {2}m radius',
+      'Geofence updated: {0} of {1} buildings within their geofence radius',
       buildingsWithin,
-      response.buildings_within_geofence.length,
-      response.radius_meters
+      response.buildings_within_geofence.length
     );
     
     setGeofenceResponse(response);
@@ -55,59 +55,46 @@ const App = () => {
     setGeofenceLoading(false);
   };
   
-  // Handle radius change
-  const handleRadiusChange = (event) => {
-    const newRadius = parseInt(event.target.value, 10);
-    setRadiusMeters(newRadius);
-    
-    Logger.debug('Radius changed to {0}m', newRadius);
-    
-    // Set loading state when radius changes
-    if (geofenceResponse) {
-      setGeofenceLoading(true);
-    }
+  // Handle building selection
+  const handleBuildingSelect = (buildingId) => {
+    setSelectedBuildingId(buildingId);
+    Logger.info('Selected building for geofencing: {0}', buildingId);
   };
   
   return (
     <div className="app">
       <header className="app-header">
         <h1>Geofencing App</h1>
-        <div className="radius-control">
-          <label htmlFor="radius-slider">Geofence Radius: {radiusMeters}m</label>
-          <input
-            id="radius-slider"
-            type="range"
-            min="10"
-            max="500"
-            step="10"
-            value={radiusMeters}
-            onChange={handleRadiusChange}
-          />
-        </div>
+        <p className="app-description">
+          Track your location and see if you're within the geofence of predefined buildings
+        </p>
       </header>
       
       <main className="app-content">
-        <div className="map-section">
-          <Map
-            userLocation={userLocation}
-            radiusMeters={radiusMeters}
-            geofenceResponse={geofenceResponse}
-          />
-        </div>
-        
-        <div className="sidebar">
+        <div className="left-panel">
+          <BuildingManager onBuildingSelect={handleBuildingSelect} />
+          
           <GeofenceStatus
             geofenceResponse={geofenceResponse}
             loading={geofenceLoading}
             error={geofenceError}
+            selectedBuildingId={selectedBuildingId}
           />
           
           <LocationTracker
             onLocationUpdate={handleLocationUpdate}
             onGeofenceUpdate={handleGeofenceUpdate}
-            radiusMeters={radiusMeters}
-            checkInterval={config.geofence.checkIntervalMs}
+            onGeofenceError={handleGeofenceError}
+            selectedBuildingId={selectedBuildingId}
             autoStartTracking={true}
+          />
+        </div>
+        
+        <div className="map-section">
+          <Map
+            userLocation={userLocation}
+            geofenceResponse={geofenceResponse}
+            selectedBuildingId={selectedBuildingId}
           />
         </div>
       </main>
