@@ -15,19 +15,19 @@ def create_sample_offices():
         # Sample offices
         offices = [
             {
-            "name": "AWBS Bangalore Office",
-            "address": "Indicube Penta, Richmond Rd, Shanthala Nagar, Richmond Town, Bengaluru, Karnataka 560025",
-            "latitude": 12.966000031799013,
-            "longitude": 77.60360204624122,
-            "radius": 500
+                "name": "AWBS Bangalore Office",
+                "address": "Indicube Penta, Richmond Rd, Shanthala Nagar, Richmond Town, Bengaluru, Karnataka 560025",
+                "latitude": 12.966000031799013,
+                "longitude": 77.60360204624122,
+                "radius": 500
             },
             {
-                "name": "Branch Office",
-                "address": "456 Market St, San Francisco, CA",
-                "latitude": 37.7749,
-                "longitude": -122.4194,
-                "radius": 75,
-            },
+                "name": "AWBS UK Office",
+                "address": "20 - 22 Wenlock Rd, London N1 7GU, United Kingdom",
+                "latitude": 51.530625267853445,
+                "longitude": -0.09350614639267102,
+                "radius": 200
+            }
         ]
         
         for office_data in offices:
