@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Attendance Tracker</h1>
+            <div class="user-info">
+                <span id="user-display">Not logged in</span>
+                <button id="logout-btn" class="btn btn-danger" style="display: none;">Logout</button>
+            </div>
+        </header>
+
+        <!-- Login Form (shown by default) -->
+        <div id="login-container" class="form-container">
+            <h2>Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+            <p>Don't have an account? <a href="#" id="show-register">Register here</a></p>
+        </div>
+
+        <!-- Register Form (hidden by default) -->
+        <div id="register-container" class="form-container" style="display: none;">
+            <h2>Register</h2>
+            <form id="register-form">
+                <div class="form-group">
+                    <label for="reg-email">Email:</label>
+                    <input type="email" id="reg-email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-username">Username:</label>
+                    <input type="text" id="reg-username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-fullname">Full Name:</label>
+                    <input type="text" id="reg-fullname" name="full_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Password:</label>
+                    <input type="password" id="reg-password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+            <p>Already have an account? <a href="#" id="show-login">Login here</a></p>
+        </div>
+
+        <!-- Dashboard (hidden by default) -->
+        <div id="dashboard-container" style="display: none;">
+            <div class="dashboard-header">
+                <h2>Attendance Dashboard</h2>
+                <div class="btn-group">
+                    <button id="check-in-btn" class="btn btn-success">Check In</button>
+                    <button id="check-out-btn" class="btn btn-warning">Check Out</button>
+                </div>
+            </div>
+
+            <div class="status-container">
+                <div class="status-card">
+                    <h3>Current Status</h3>
+                    <p id="current-status">Not checked in</p>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <h3>Location Map</h3>
+                <div id="map"></div>
+                <div class="map-controls">
+                    <button id="locate-btn" class="btn btn-info">Locate Me</button>
+                    <span id="coordinates"></span>
+                </div>
+            </div>
+
+            <div class="attendance-history">
+                <h3>Attendance History</h3>
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Office</th>
+                            <th>Check-in Time</th>
+                            <th>Check-out Time</th>
+                            <th>Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                        <!-- Table rows will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="error-message" class="error-message"></div>
+    </div>
+
+    <!-- Leaflet JS for maps -->
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+    
+    <!-- App Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/location.js"></script>
+    <script src="js/attendance.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

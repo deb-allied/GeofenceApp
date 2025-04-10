@@ -47,7 +47,7 @@ const useGeolocation = (options = {}) => {
     lastPositionRef.current = position;
     
     // If we haven't updated recently, update immediately
-    if (now - lastUpdateTimeRef.current >= throttleMs) {
+    if (now - lastUpdateTimeRef.current <= throttleMs) {
       const { latitude, longitude, accuracy } = position.coords;
       const timestamp = position.timestamp;
       

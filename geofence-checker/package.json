@@ -1,0 +1,14 @@
+{
+    "name": "geofence-checker",
+    "version": "1.0.0",
+    "description": "A simple frontend application to check if a user's location is inside a geofence",
+    "main": "src/app.js",
+    "type": "module",
+    "scripts": {
+      "start": "serve",
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+      "serve": "^14.2.0"
+    }
+  }
