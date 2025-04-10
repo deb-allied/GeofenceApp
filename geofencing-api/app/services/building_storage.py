@@ -40,11 +40,11 @@ class BuildingStorage:
                 geofence_radius_meters=150.0
             ),
             BuildingCreate(
-                name="City Park",
-                latitude=40.7829,
-                longitude=-73.9654,
-                address="789 Green Path, New York, NY",
-                category="park",
+                name="Allied Worldwide Bengaluru",
+                latitude=12.967549,
+                longitude=77.603994,
+                address="First Floor, Le Parc Richmonde",
+                category="Office",
                 geofence_radius_meters=200.0
             )
         ]
