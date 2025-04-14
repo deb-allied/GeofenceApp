@@ -5,6 +5,7 @@ from app.api import attendance, auth, offices
 from app.config import settings
 from app.db.base import Base, engine
 from app.logger import logger
+from app.api import admin
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -13,6 +14,12 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
+)
+
+app.include_router(
+    admin.router, 
+    prefix=f"{settings.API_V1_STR}/admin", 
+    tags=["admin"]
 )
 
 # Set up CORS middleware
@@ -47,9 +54,45 @@ def root():
 
 
 @app.on_event("startup")
-async def startup_event():
-    """Execute tasks at application startup."""
-    logger.info("Starting up Attendance Tracker API")
+async def create_first_superadmin():
+    """Create the first super admin if no users exist."""
+    from app.db.base import SessionLocal
+    from app.models.models import User
+    from app.core.auth import get_password_hash
+    import os
+    
+    db = SessionLocal()
+    try:
+        # Check if any users exist
+        user_count = db.query(User).count()
+        
+        if user_count == 0:
+            # Get super admin credentials from environment variables
+            super_admin_username = os.getenv("SUPER_ADMIN_USERNAME", "superadmin")
+            super_admin_email = os.getenv("SUPER_ADMIN_EMAIL", "superadmin@example.com")
+            super_admin_password = os.getenv("SUPER_ADMIN_PASSWORD", "superadmin123")
+            
+            # Create super admin user
+            super_admin = User(
+                email=super_admin_email,
+                username=super_admin_username,
+                hashed_password=get_password_hash(super_admin_password),
+                full_name="Super Admin",
+                is_active=True,
+                is_admin=True,
+                is_super_admin=True,
+            )
+            
+            db.add(super_admin)
+            db.commit()
+            db.refresh(super_admin)
+            
+            logger.info("Created first super admin user: %s", super_admin_username)
+            logger.warning("Please change the default super admin password immediately!")
+    except Exception as e:
+        logger.error("Error creating first super admin: %s", str(e))
+    finally:
+        db.close()
 
 
 @app.on_event("shutdown")
@@ -62,4 +105,4 @@ if __name__ == "__main__":
     import uvicorn
     
     logger.info("Starting Attendance Tracker API server")
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8051, reload=True)

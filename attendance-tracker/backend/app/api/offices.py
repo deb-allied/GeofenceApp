@@ -30,7 +30,7 @@ def read_offices(
     Returns:
         List of offices
     """
-    offices = db.query(Office).offset(skip).limit(limit).all()
+    offices = db.query(Office).order_by(Office.id).offset(skip).limit(limit).all()
     logger.info("Retrieved %d offices", len(offices))
     return offices
 

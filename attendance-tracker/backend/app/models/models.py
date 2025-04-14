@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Table
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -13,18 +13,43 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True, nullable=False)
-    username = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
-    full_name = Column(String, nullable=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    username = Column(String(150), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    full_name = Column(String(255), nullable=True)
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
+    is_super_admin = Column(Boolean, default=False)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    last_login = Column(DateTime, nullable=True)
     
     # Relationships
     attendance_records = relationship("AttendanceRecord", back_populates="user")
+    created_users = relationship("User", backref="creator", remote_side=[id])
+    login_history = relationship("UserLoginHistory", back_populates="user")
     
     def __repr__(self):
         return f"<User {self.username}>"
+
+
+class UserLoginHistory(Base):
+    """Track user login/logout activity."""
+    
+    __tablename__ = "user_login_history"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    login_time = Column(DateTime, nullable=False, default=datetime.utcnow)
+    logout_time = Column(DateTime, nullable=True)
+    ip_address = Column(String(50), nullable=True)
+    user_agent = Column(String(512), nullable=True)
+    
+    user = relationship("User", back_populates="login_history")
+    
+    def __repr__(self):
+        status = "Active" if self.logout_time is None else "Completed"
+        return f"<LoginSession {self.id} - User: {self.user_id} - Status: {status}>"
 
 
 class Office(Base):
@@ -33,15 +58,14 @@ class Office(Base):
     __tablename__ = "offices"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    address = Column(String, nullable=False)
+    name = Column(String(255), nullable=False)
+    address = Column(String(500), nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
-    radius = Column(Float, nullable=False)  # Geofence radius in meters
+    radius = Column(Float, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationships
     attendance_records = relationship("AttendanceRecord", back_populates="office")
     
     def __repr__(self):
@@ -63,7 +87,6 @@ class AttendanceRecord(Base):
     check_out_latitude = Column(Float, nullable=True)
     check_out_longitude = Column(Float, nullable=True)
     
-    # Relationships
     user = relationship("User", back_populates="attendance_records")
     office = relationship("Office", back_populates="attendance_records")
     

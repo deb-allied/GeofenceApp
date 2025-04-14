@@ -35,6 +35,10 @@ class UserInDB(UserBase):
     id: int
     full_name: Optional[str] = None
     is_admin: bool = False
+    is_super_admin: bool = False
+    created_at: datetime
+    last_login: Optional[datetime] = None
+    created_by: Optional[int] = None
 
     class Config:
         orm_mode = True
@@ -42,6 +46,35 @@ class UserInDB(UserBase):
 
 class User(UserInDB):
     """Schema for User response data."""
+    
+    pass
+
+
+# Admin User Management Schemas
+class AdminUserCreate(BaseModel):
+    """Schema for admin creating a new user."""
+    
+    email: EmailStr
+    username: str
+    password: str
+    full_name: Optional[str] = None
+    is_active: bool = True
+    is_admin: bool = False  # Only super_admin can set this to True
+
+
+class AdminUserUpdate(BaseModel):
+    """Schema for admin updating a user."""
+    
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    full_name: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_admin: Optional[bool] = None  # Only super_admin can modify this
+
+
+class UserExtended(User):
+    """Schema for extended User response with additional fields."""
     
     pass
 
@@ -128,6 +161,32 @@ class AttendanceRecord(AttendanceBase):
         orm_mode = True
 
 
+# Login History Schemas
+class LoginHistoryBase(BaseModel):
+    """Base schema for login history."""
+    
+    user_id: int
+    login_time: datetime
+    logout_time: Optional[datetime] = None
+    ip_address: Optional[str] = None
+    user_agent: Optional[str] = None
+
+
+class LoginHistory(LoginHistoryBase):
+    """Schema for login history response."""
+    
+    id: int
+    
+    class Config:
+        orm_mode = True
+
+
+class LoginHistoryWithUser(LoginHistory):
+    """Schema for login history with user details."""
+    
+    user: User
+
+
 # Authentication Schemas
 class Token(BaseModel):
     """Schema for JWT token response."""
@@ -140,7 +199,7 @@ class TokenPayload(BaseModel):
     """Schema for JWT token payload."""
     
     sub: int
-    exp: int  # Change this from datetime to int, as JWT stores exp as Unix timestamp
+    exp: int  # Store as Unix timestamp
 
 
 # Location Schemas

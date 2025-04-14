@@ -13,7 +13,10 @@
             <h1>Attendance Tracker</h1>
             <div class="user-info">
                 <span id="user-display">Not logged in</span>
-                <button id="logout-btn" class="btn btn-danger" style="display: none;">Logout</button>
+                <div class="user-actions">
+                    <button id="admin-btn" class="btn btn-primary" style="display: none;">Admin Panel</button>
+                    <button id="logout-btn" class="btn btn-danger" style="display: none;">Logout</button>
+                </div>
             </div>
         </header>
 
@@ -31,32 +34,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Login</button>
             </form>
-            <p>Don't have an account? <a href="#" id="show-register">Register here</a></p>
-        </div>
-
-        <!-- Register Form (hidden by default) -->
-        <div id="register-container" class="form-container" style="display: none;">
-            <h2>Register</h2>
-            <form id="register-form">
-                <div class="form-group">
-                    <label for="reg-email">Email:</label>
-                    <input type="email" id="reg-email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-username">Username:</label>
-                    <input type="text" id="reg-username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-fullname">Full Name:</label>
-                    <input type="text" id="reg-fullname" name="full_name" required>
-                </div>
-                <div class="form-group">
-                    <label for="reg-password">Password:</label>
-                    <input type="password" id="reg-password" name="password" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Register</button>
-            </form>
-            <p>Already have an account? <a href="#" id="show-login">Login here</a></p>
+            <p>Please contact your administrator if you don't have an account.</p>
         </div>
 
         <!-- Dashboard (hidden by default) -->
