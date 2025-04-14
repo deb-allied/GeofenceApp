@@ -1,0 +1,84 @@
+name: Build and deploy Python app to Azure Web App - attendance-logger
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # Required for actions/checkout
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python version
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "${HOME}/.local/bin" >> $GITHUB_PATH
+
+      - name: Set Poetry config for virtualenvs
+        run: |
+          poetry config virtualenvs.in-project true
+
+      - name: Navigate to backend and install dependencies
+        working-directory: attendance-tracker/backend
+        run: |
+          poetry install --no-root
+
+      # Optional: Add step to run tests (inside backend)
+      # - name: Run tests
+      #   working-directory: attendance-tracker/backend
+      #   run: poetry run pytest
+
+      - name: Zip artifact for deployment
+        working-directory: attendance-tracker/backend
+        run: poetry run uvicorn app.main:app --reload
+
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app
+          path: attendance-tracker/backend
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_BAAE86ED59764D209015A15E962305EB }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_949D3F4901E14DD888FFEA13F516A235 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D2D03162E21E4264A473269AF7EDEE0A }}
+
+      - name: 'Deploy to Azure Web App'
+        uses: azure/webapps-deploy@v3
+        id: deploy-to-webapp
+        with:
+          app-name: 'attendance-logger'
+          slot-name: 'Production'
