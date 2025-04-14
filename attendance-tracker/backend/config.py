@@ -1,7 +1,7 @@
 import os
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, AnyUrl, BaseSettings, validator
+from pydantic import AnyHttpUrl, BaseSettings, PostgresDsn, validator
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,13 +17,13 @@ class Settings(BaseSettings):
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-for-development")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
 
-    # DATABASE
-    DATABASE_URL: str = os.getenv(
+    # DATABASE - Use full URL directly from environment
+    DATABASE_URL: PostgresDsn = os.getenv(
         "DATABASE_URL",
-        "mssql+pyodbc://debshishu:00a1238UazL6@AWLARIA01/ARIADATA_10042025"
-        "?driver=ODBC+Driver+17+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes"
+        # "postgresql://attendance_admin:qFjnyGHWAUNRvaxYPLfd9EFiQ8rvJSMu@dpg-cvrp9qqli9vc739l1hu0-a.oregon-postgres.render.com/attendance_tracker_muo9",
+        "postgresql+psycopg2://postgres:%40HelloPostGres@localhost/attendance_tracker"
     )
-    SQLALCHEMY_DATABASE_URI: Optional[str] = None
+    SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
     @validator("SQLALCHEMY_DATABASE_URI", pre=True, always=True)
     def set_db_uri(cls, v: Optional[str], values: Dict[str, Any]) -> str:

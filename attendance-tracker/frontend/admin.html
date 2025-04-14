@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Attendance Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI=" crossorigin="" />
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Admin Sidebar -->
+        <nav class="admin-sidebar">
+            <div class="sidebar-header">
+                <h2>Admin Panel</h2>
+                <span id="admin-name">Loading...</span>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="nav-link active" data-section="dashboard">Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-section="users">Users</a></li>
+                <li><a href="#" class="nav-link" data-section="offices">Offices</a></li>
+                <li><a href="#" class="nav-link" data-section="activity">Activity Log</a></li>
+                <li id="admin-management-link" style="display: none;"><a href="#" class="nav-link" data-section="admins">Admin Management</a></li>
+                <li class="separator"></li>
+                <li><a href="#" id="admin-logout">Logout</a></li>
+                <li><a href="index.html">Back to App</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="admin-content">
+            <header class="content-header">
+                <h1 id="section-title">Dashboard</h1>
+                <div id="section-actions">
+                    <!-- Dynamic action buttons will be added here -->
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="content-section active">
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <h3>Users</h3>
+                        <div class="stat-value" id="total-users">0</div>
+                        <div class="stat-details">
+                            <span id="active-users">0 active</span> / 
+                            <span id="admin-users">0 admins</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Offices</h3>
+                        <div class="stat-value" id="total-offices">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Today's Attendance</h3>
+                        <div class="stat-value" id="today-attendance">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Current Logins</h3>
+                        <div class="stat-value" id="active-logins">0</div>
+                        <div class="stat-details">
+                            <span id="today-logins">0 today</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>Recent Activity</h3>
+                    <div class="table-responsive">
+                        <table id="recent-activity-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Time</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-activity-body">
+                                <!-- Will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Users Section -->
+            <section id="users-section" class="content-section">
+                <div class="table-responsive">
+                    <table id="users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Full Name</th>
+                                <th>Status</th>
+                                <th>Role</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Offices Section -->
+            <section id="offices-section" class="content-section">
+                <div class="office-map-container">
+                    <div id="admin-map"></div>
+                </div>
+                <div class="table-responsive">
+                    <table id="offices-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Address</th>
+                                <th>Coordinates</th>
+                                <th>Radius (m)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="offices-table-body">
+                            <!-- Will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Activity Log Section -->
+            <section id="activity-section" class="content-section">
+                <div class="filter-controls">
+                    <div class="form-group">
+                        <label for="activity-user-filter">User:</label>
+                        <select id="activity-user-filter">
+                            <option value="">All Users</option>
+                            <!-- Options will be added dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="activity-type-filter">Activity Type:</label>
+                        <select id="activity-type-filter">
+                            <option value="">All Activities</option>
+                            <option value="login">Logins</option>
+                            <option value="attendance">Attendance</option>
+                        </select>
+                    </div>
+                    <button id="apply-filters" class="btn btn-primary">Apply Filters</button>
+                </div>
+                <div class="table-responsive">
+                    <table id="activity-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Activity Type</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Duration</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activity-table-body">
+                            <!-- Will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Admin Management Section -->
+            <section id="admins-section" class="content-section">
+                <div class="table-responsive">
+                    <table id="admins-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Full Name</th>
+                                <th>Status</th>
+                                <th>Super Admin</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admins-table-body">
+                            <!-- Will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal Templates -->
+    <div id="modal-backdrop" class="modal-backdrop"></div>
+    
+    <!-- User Modal -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="user-modal-title">Add User</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="user-form">
+                    <input type="hidden" id="user-id">
+                    <div class="form-group">
+                        <label for="user-username">Username:</label>
+                        <input type="text" id="user-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-email">Email:</label>
+                        <input type="email" id="user-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-fullname">Full Name:</label>
+                        <input type="text" id="user-fullname">
+                    </div>
+                    <div class="form-group">
+                        <label for="user-password">Password:</label>
+                        <input type="password" id="user-password">
+                        <small class="help-text">Leave blank to keep unchanged when editing.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="user-active">Status:</label>
+                        <select id="user-active">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="user-admin-group">
+                        <label for="user-admin">Role:</label>
+                        <select id="user-admin">
+                            <option value="false">Regular User</option>
+                            <option value="true">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Office Modal -->
+    <div id="office-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="office-modal-title">Add Office</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="office-form">
+                    <input type="hidden" id="office-id">
+                    <div class="form-group">
+                        <label for="office-name">Name:</label>
+                        <input type="text" id="office-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="office-address">Address:</label>
+                        <input type="text" id="office-address" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="office-latitude">Latitude:</label>
+                        <input type="number" id="office-latitude" step="0.000001" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="office-longitude">Longitude:</label>
+                        <input type="number" id="office-longitude" step="0.000001" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="office-radius">Geofence Radius (meters):</label>
+                        <input type="number" id="office-radius" min="10" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="button" class="btn btn-secondary close-modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Confirm Action</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Are you sure you want to proceed?</p>
+                <div class="form-actions">
+                    <button id="confirm-yes" class="btn btn-danger">Yes</button>
+                    <button class="btn btn-secondary close-modal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-error-message" class="error-message"></div>
+
+    <!-- Leaflet JS for maps -->
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+    
+    <!-- Admin Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin/admin-auth.js"></script>
+    <script src="js/admin/admin-users.js"></script>
+    <script src="js/admin/admin-offices.js"></script>
+    <script src="js/admin/admin-activity.js"></script>
+    <script src="js/admin/admin-dashboard.js"></script>
+    <script src="js/admin/admin.js"></script>
+</body>
+</html>

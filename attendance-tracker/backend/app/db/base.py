@@ -5,14 +5,22 @@ from sqlalchemy.orm import sessionmaker
 from app.config import settings
 from app.logger import logger
 
-# Create SQLAlchemy engine instance
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
+# MSSQL-specific: create engine with fast_executemany for performance
+# connect_args = {"fast_executemany": True}
+
+# Initialize SQLAlchemy engine for MSSQL
+engine = create_engine(
+    settings.SQLALCHEMY_DATABASE_URI,
+    # connect_args=connect_args,
+    # pool_pre_ping=True,
+)
+
 logger.info("Database engine initialized with URI: %s", settings.SQLALCHEMY_DATABASE_URI)
 
-# Create SessionLocal class
+# Session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Create Base class for declarative models
+# Declarative base class
 Base = declarative_base()
 
 

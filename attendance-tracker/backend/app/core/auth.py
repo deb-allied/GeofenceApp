@@ -65,11 +65,21 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
-@staticmethod
 def get_current_user(
     db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
 ) -> User:
-    """Get the current authenticated user."""
+    """Get the current authenticated user.
+    
+    Args:
+        db: Database session
+        token: JWT token
+    
+    Returns:
+        User object
+    
+    Raises:
+        HTTPException: If token is invalid or user not found
+    """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -80,7 +90,7 @@ def get_current_user(
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
         token_data = TokenPayload(**payload)
         
-        # Fix: Convert the exp timestamp to datetime for comparison
+        # Convert the exp timestamp to datetime for comparison
         if datetime.fromtimestamp(token_data.exp) < datetime.utcnow():
             logger.warning("Token expired for subject: %s", token_data.sub)
             raise credentials_exception
@@ -137,9 +147,29 @@ def get_current_active_admin(current_user: User = Depends(get_current_user)) -> 
     Raises:
         HTTPException: If user is not an admin
     """
-    if not current_user.is_admin:
+    if not current_user.is_admin and not current_user.is_super_admin:
         logger.warning("Non-admin user attempted admin action: %s", current_user.username)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions"
+        )
+    return current_user
+
+
+def get_current_active_superadmin(current_user: User = Depends(get_current_user)) -> User:
+    """Get the current active super admin user.
+    
+    Args:
+        current_user: Current user from token
+    
+    Returns:
+        User object if active and super admin
+    
+    Raises:
+        HTTPException: If user is not a super admin
+    """
+    if not current_user.is_super_admin:
+        logger.warning("Non-super admin user attempted super admin action: %s", current_user.username)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Super admin privileges required"
         )
     return current_user
