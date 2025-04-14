@@ -42,8 +42,7 @@ jobs:
 
       - name: Zip artifact for deployment
         working-directory: attendance-tracker/backend
-        run: |
-          zip -r release.zip . -x "*/.venv/*"
+        run: poetry run uvicorn app.main:app --reload
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
