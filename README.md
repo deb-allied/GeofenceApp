@@ -1,309 +1,443 @@
-# Geofencing API
+# Geofence-Based Attendance Tracker
 
-A comprehensive geofencing solution that tracks user locations via GPS and determines proximity to buildings.
+A complete attendance tracking system that uses geofencing to allow employees to check in and out only when they are physically present at office locations. The system includes role-based access control, detailed activity logging, and a comprehensive admin panel.
 
 ## Table of Contents
-- [Project Overview](#project-overview)
+
+- [Overview](#overview)
 - [Features](#features)
 - [System Architecture](#system-architecture)
-- [Backend](#backend)
-  - [Tech Stack](#backend-tech-stack)
-  - [Directory Structure](#backend-directory-structure)
-  - [Components](#backend-components)
-  - [API Endpoints](#api-endpoints)
-  - [Algorithm](#algorithm)
-- [Frontend](#frontend)
-  - [Tech Stack](#frontend-tech-stack)
-  - [Directory Structure](#frontend-directory-structure)
-  - [Components](#frontend-components)
-  - [State Management](#state-management)
-- [Installation & Setup](#installation--setup)
-- [Usage](#usage)
+- [User Roles](#user-roles)
+- [File Structure](#file-structure)
+- [Installation](#installation)
 - [Configuration](#configuration)
-- [Contributing](#contributing)
+- [Running the Application](#running-the-application)
+- [API Endpoints](#api-endpoints)
+- [Frontend Components](#frontend-components)
+- [Deployment](#deployment)
+- [Troubleshooting](#troubleshooting)
 
-## Project Overview
+## Overview
 
-This geofencing solution allows tracking users via GPS and determining whether they are within a configurable radius (default: 100m) of buildings. The system uses OpenStreetMap data to identify buildings and implements the Haversine formula for accurate distance calculations.
-
-The application consists of a FastAPI backend for handling geolocation processing and a React frontend for visualization and user interaction.
+This attendance tracking system is designed for organizations with multiple office locations. It uses geofencing technology to ensure employees can only check in when they are physically present at an office location. The system provides a hierarchical user management system, detailed activity logging, and a comprehensive dashboard for administrators.
 
 ## Features
 
-- **Real-time location tracking** using browser's Geolocation API
-- **Building data** retrieved from OpenStreetMap
-- **Efficient distance calculation** using the Haversine formula (O(1) time complexity)
-- **Configurable geofence radius** (default: 100m)
-- **Interactive map visualization** of user location, buildings, and geofence boundaries
-- **Real-time status updates** when entering/exiting geofence areas
-- **Comprehensive logging** for debugging and monitoring
-- **OOP-based architecture** for maintainability and extensibility
+### Core Features
+- **Geofencing**: Uses location-based technology to verify user presence at office locations
+- **Multiple Office Support**: Allows configuration of multiple office locations with custom geofence radii
+- **Check-in/Check-out**: Records employee attendance with timestamps and location data
+- **Interactive Maps**: Visual representation of office locations and user position
+- **Attendance History**: Comprehensive record of attendance for reporting and analysis
+
+### Admin Features
+- **User Management**: Create, update, and delete user accounts
+- **Office Management**: Define and manage multiple office locations with custom geofences
+- **Role-Based Access**: Three-tier user access (regular users, admins, super admins)
+- **Activity Monitoring**: Track login/logout events and attendance records
+- **Dashboard Analytics**: Overview of system usage and attendance metrics
+
+### Security Features
+- **JWT Authentication**: Secure token-based authentication
+- **Password Hashing**: Secure password storage using bcrypt
+- **Session Tracking**: Monitor active user sessions
+- **Audit Trail**: Comprehensive logging of all user activities
 
 ## System Architecture
 
-The system follows a client-server architecture:
+The application follows a client-server architecture:
 
-- **Backend**: FastAPI server that handles geofencing calculations, building data retrieval, and location processing
-- **Frontend**: React application that provides user interface with map visualization and status indicators
-- **External Services**: OpenStreetMap API for retrieving building data
-
-## Backend
-
-### Backend Tech Stack
-
-- **FastAPI**: High-performance asynchronous API framework
-- **Poetry**: Dependency management
+### Backend
+- **FastAPI**: Modern, high-performance Python web framework
+- **SQLAlchemy**: ORM for database operations
+- **PostgreSQL**: Relational database for data storage
+- **JWT**: Token-based authentication
 - **Pydantic**: Data validation and settings management
-- **HTTPX**: Asynchronous HTTP client for API requests
-- **Loguru**: Structured logging
-- **Uvicorn**: ASGI server for running the application
 
-### Backend Directory Structure
+### Frontend
+- **Vanilla JavaScript**: No framework dependencies
+- **HTML5/CSS3**: Modern, responsive design
+- **Leaflet.js**: Interactive maps for geofencing visualization
+
+## User Roles
+
+### Regular User
+- Can log in and view the attendance dashboard
+- Can check in/out when within a geofence
+- Can view their own attendance history
+
+### Admin
+- All regular user capabilities
+- Can manage regular users (create, update, delete)
+- Can manage office locations and geofences
+- Can view activity logs and attendance records for all users
+
+### Super Admin
+- All admin capabilities
+- Can create and manage other admins
+- Access to system-wide configurations
+- Cannot be deleted or demoted by other admins
+
+## File Structure
 
 ```
-geofencing-api/
-├── pyproject.toml
-├── app/
-│   ├── __init__.py
-│   ├── main.py
-│   ├── config.py
-│   ├── logging_config.py
-│   ├── models/
+attendance-tracker/
+├── backend/
+│   ├── pyproject.toml        # Poetry package management
+│   ├── app/
 │   │   ├── __init__.py
-│   │   ├── location.py
-│   │   └── geofence.py
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── geofence_service.py
-│   │   ├── location_service.py
-│   │   └── osm_service.py
-│   ├── api/
-│   │   ├── __init__.py
-│   │   ├── endpoints/
-│   │   │   ├── __init__.py
-│   │   │   ├── geofence.py
-│   │   │   └── location.py
-│   └── utils/
-│       ├── __init__.py
-│       └── distance_calculator.py
-└── tests/
-    ├── __init__.py
-    ├── test_geofence_service.py
-    └── test_location_service.py
+│   │   ├── main.py           # FastAPI app initialization
+│   │   ├── config.py         # Configuration settings
+│   │   ├── logger.py         # Logger configuration
+│   │   ├── api/              # API endpoints
+│   │   │   ├── auth.py       # Authentication endpoints
+│   │   │   ├── admin.py      # Admin endpoints
+│   │   │   ├── offices.py    # Office management endpoints
+│   │   │   └── attendance.py # Attendance tracking endpoints
+│   │   ├── core/             # Core functionality
+│   │   │   ├── auth.py       # Authentication logic
+│   │   │   └── geofence.py   # Geofencing logic
+│   │   ├── db/               # Database operations
+│   │   │   └── base.py       # Database connection
+│   │   ├── models/           # Database models
+│   │   │   └── models.py     # SQLAlchemy models
+│   │   └── schemas/          # Pydantic schemas
+│   │       └── schemas.py    # Data validation schemas
+├── frontend/
+│   ├── index.html            # Main user application
+│   ├── admin.html            # Admin panel
+│   ├── css/
+│   │   ├── styles.css        # Main styles
+│   │   └── admin.css         # Admin panel styles
+│   ├── js/
+│   │   ├── app.js            # Main application logic
+│   │   ├── auth.js           # Authentication functionality
+│   │   ├── attendance.js     # Attendance tracking
+│   │   ├── location.js       # Geolocation and mapping
+│   │   ├── config.js         # Configuration
+│   │   └── admin/            # Admin panel scripts
+│   │       ├── admin.js      # Main admin panel logic
+│   │       ├── admin-auth.js # Admin authentication
+│   │       ├── admin-users.js # User management
+│   │       ├── admin-offices.js # Office management
+│   │       ├── admin-activity.js # Activity logging
+│   │       └── admin-dashboard.js # Dashboard statistics
 ```
 
-### Backend Components
+## Installation
 
-#### Models
-
-- **location.py**: Defines data models for geographic coordinates, user location, and buildings
-- **geofence.py**: Defines data models for geofence requests and responses
-
-#### Services
-
-- **geofence_service.py**: Core business logic for geofencing operations
-  - Determines if a user is within a geofence of one or more buildings
-  - Calculates proximity and generates status reports
-  
-- **osm_service.py**: Interfaces with OpenStreetMap API
-  - Retrieves building data near specified coordinates
-  - Performs reverse geocoding to get location information
-  
-- **location_service.py**: Handles user location data processing
-
-#### Utils
-
-- **distance_calculator.py**: Implements the Haversine formula
-  - Calculates great-circle distance between geographic coordinates
-  - Determines if points are within a specific radius
-
-#### API Endpoints
-
-- **/geofence/check**: Checks if a user is within the geofence of any buildings
-
-### Algorithm
-
-The backend uses the Haversine formula to calculate the great-circle distance between two points on the Earth's surface:
-
-```python
-def haversine_distance(point1, point2):
-    # Convert latitude and longitude from degrees to radians
-    lat1_rad = math.radians(point1.latitude)
-    lon1_rad = math.radians(point1.longitude)
-    lat2_rad = math.radians(point2.latitude)
-    lon2_rad = math.radians(point2.longitude)
-    
-    # Haversine formula
-    dlon = lon2_rad - lon1_rad
-    dlat = lat2_rad - lat1_rad
-    
-    a = (
-        math.sin(dlat / 2) ** 2 + 
-        math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
-    )
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    
-    # Distance in meters
-    distance = EARTH_RADIUS_METERS * c
-    
-    return distance
-```
-
-This algorithm has a time complexity of O(1), making it highly efficient even for applications that need to process many coordinates.
-
-## Frontend
-
-### Frontend Tech Stack
-
-- **React**: UI library for building the user interface
-- **Leaflet/React-Leaflet**: Interactive map components
-- **Axios**: HTTP client for API requests
-- **CSS**: Styling
-
-### Frontend Directory Structure
-
-```
-geofencing-ui/
-├── package.json
-├── public/
-│   ├── index.html
-│   └── favicon.ico
-└── src/
-    ├── index.js
-    ├── App.js
-    ├── config.js
-    ├── components/
-    │   ├── Map/
-    │   │   ├── Map.jsx
-    │   │   ├── Map.css
-    │   │   └── index.js
-    │   ├── GeofenceStatus/
-    │   │   ├── GeofenceStatus.jsx
-    │   │   ├── GeofenceStatus.css
-    │   │   └── index.js
-    │   └── LocationTracker/
-    │       ├── LocationTracker.jsx
-    │       ├── LocationTracker.css
-    │       └── index.js
-    ├── services/
-    │   ├── api.js
-    │   ├── geofenceService.js
-    │   └── locationService.js
-    ├── hooks/
-    │   └── useGeolocation.js
-    └── utils/
-        └── logger.js
-```
-
-### Frontend Components
-
-#### Map Component
-- Displays an interactive map with:
-  - User's current location
-  - Geofence radius as a circle
-  - Building markers with color-coding for geofence status
-  - Popups with detailed information
-
-#### GeofenceStatus Component
-- Displays the current geofence status:
-  - Whether the user is within any building's geofence
-  - Number of buildings within range
-  - Distance to the nearest building
-  - Last update timestamp
-
-#### LocationTracker Component
-- Manages user location tracking:
-  - Controls for starting/stopping tracking
-  - Manual location update button
-  - Display of current coordinates and accuracy
-  - Error handling for location services
-
-### State Management
-
-The frontend uses React's built-in state management with hooks:
-
-- **useGeolocation**: Custom hook for accessing and tracking user location
-  - Provides real-time location updates
-  - Handles location errors and loading states
-  - Controls for tracking state (start/stop)
-
-- **App.js**: Manages global state
-  - User location
-  - Geofence response data
-  - Radius settings
-  - Loading and error states
-
-## Installation & Setup
+### Prerequisites
+- Python 3.12+
+- PostgreSQL
+- Node.js (optional, for development tools)
 
 ### Backend Setup
 
-1. Install Poetry (dependency management tool):
-   ```bash
-   curl -sSL https://install.python-poetry.org | python3 -
-   ```
+1. **Clone the repository**:
+```bash
+git clone https://github.com/yourusername/attendance-tracker.git
+cd attendance-tracker
+```
 
-2. Clone the repository and install dependencies:
-   ```bash
-   git clone https://github.com/yourusername/geofencing-api.git
-   cd geofencing-api
-   poetry install
-   ```
+2. **Install Poetry** (Python dependency management):
+```bash
+curl -sSL https://install.python-poetry.org | python3 -
+```
 
-3. Run the backend server:
-   ```bash
-   poetry run python -m app.main
-   ```
-   The API will be available at http://localhost:8000
+3. **Install backend dependencies**:
+```bash
+cd backend
+poetry install
+```
+
+4. **Create a PostgreSQL database**:
+```sql
+CREATE DATABASE attendance_tracker;
+CREATE USER attendance_user WITH ENCRYPTED PASSWORD 'your_secure_password';
+GRANT ALL PRIVILEGES ON DATABASE attendance_tracker TO attendance_user;
+```
+
+5. **Set up environment variables** (create a `.env` file in the backend directory):
+```
+POSTGRES_SERVER=localhost
+POSTGRES_USER=attendance_user
+POSTGRES_PASSWORD=your_secure_password
+POSTGRES_DB=attendance_tracker
+SECRET_KEY=your_very_long_random_secret_key
+SUPER_ADMIN_USERNAME=superadmin
+SUPER_ADMIN_EMAIL=admin@example.com
+SUPER_ADMIN_PASSWORD=secure_initial_password
+```
+
+6. **Initialize the database**:
+```bash
+cd backend
+poetry run alembic revision --autogenerate -m "Initial migration"
+poetry run alembic upgrade head
+```
 
 ### Frontend Setup
 
-1. Install dependencies:
-   ```bash
-   cd geofencing-ui
-   npm install
-   ```
-
-2. Run the development server:
-   ```bash
-   npm start
-   ```
-   The application will be available at http://localhost:3000
-
-## Usage
-
-1. Open the application in a browser
-2. Allow location access when prompted
-3. The map will center on your current location with a 100m geofence radius
-4. Buildings within the radius will be highlighted
-5. Check the GeofenceStatus panel for detailed information
-6. Adjust the radius using the slider in the header
+No build step is required for the frontend. The application uses vanilla JavaScript and can be served from any static file server.
 
 ## Configuration
 
 ### Backend Configuration
 
-Configuration is managed in `app/config.py` using Pydantic models:
+Key configuration files:
+- `app/config.py`: Application settings
+- `.env`: Environment-specific variables
 
-- **APIConfig**: API settings (title, version, docs URL)
-- **GeofenceConfig**: Geofencing parameters (default radius, max buildings)
-- **OSMConfig**: OpenStreetMap API settings (base URL, user agent, timeout)
-- **DatabaseConfig**: Database settings (for future expansion)
+Important configuration parameters:
+- `SECRET_KEY`: Used for JWT token generation
+- `ACCESS_TOKEN_EXPIRE_MINUTES`: Token validity period
+- `GEOFENCE_RADIUS_METERS`: Default radius for new geofences
+- Database connection parameters
 
 ### Frontend Configuration
 
-Configuration is managed in `src/config.js`:
+Configure the frontend in `js/config.js`:
+- `API_URL`: Backend API endpoint
+- `DEFAULT_MAP_CENTER`: Default map location
+- `DEFAULT_MAP_ZOOM`: Default map zoom level
+- `GEOFENCE_RADIUS_METERS`: Default radius for new geofences
+- Various appearance settings for maps and UI
 
-- **api**: API connection settings (base URL, timeout)
-- **map**: Map configuration (default center, zoom levels, tile sources)
-- **geofence**: Geofencing settings (default radius, check interval, colors)
-- **locationTracking**: Location tracking parameters (accuracy, refresh rates)
+## Running the Application
 
-## Contributing
+### Development Environment
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+1. **Start the backend server**:
+```bash
+cd backend
+poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. **Serve the frontend**:
+```bash
+cd frontend
+python -m http.server 3000
+```
+
+3. **Access the application**:
+- Main application: `http://localhost:3000`
+- Admin panel: `http://localhost:3000/admin.html`
+- API documentation: `http://localhost:8000/docs`
+
+### First Login
+
+When the application starts for the first time, it automatically creates a super admin user with the credentials specified in the environment variables:
+
+- Username: `SUPER_ADMIN_USERNAME` from .env
+- Password: `SUPER_ADMIN_PASSWORD` from .env
+
+**Important**: Change the default password immediately after first login.
+
+## API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/login`: User login (get JWT token)
+- `POST /api/v1/auth/logout`: User logout (record session end)
+- `GET /api/v1/auth/me`: Get current user profile
+
+### Attendance
+- `POST /api/v1/attendance/check-location`: Check if user is within any geofence
+- `POST /api/v1/attendance/check-in`: Check in at current location
+- `POST /api/v1/attendance/check-out`: Check out from current location
+- `GET /api/v1/attendance/history`: Get user's attendance history
+- `GET /api/v1/attendance/status`: Get current attendance status
+
+### Offices
+- `GET /api/v1/offices`: List all offices
+- `POST /api/v1/offices`: Create new office (admin only)
+- `GET /api/v1/offices/{office_id}`: Get specific office
+- `PUT /api/v1/offices/{office_id}`: Update office (admin only)
+- `DELETE /api/v1/offices/{office_id}`: Delete office (admin only)
+
+### Admin
+- `GET /api/v1/admin/users`: List all users (admin only)
+- `POST /api/v1/admin/users`: Create new user (admin only)
+- `GET /api/v1/admin/users/{user_id}`: Get specific user (admin only)
+- `PUT /api/v1/admin/users/{user_id}`: Update user (admin only)
+- `DELETE /api/v1/admin/users/{user_id}`: Delete user (admin only)
+- `GET /api/v1/admin/login-history`: Get login history (admin only)
+- `GET /api/v1/admin/dashboard-stats`: Get dashboard statistics (admin only)
+
+## Frontend Components
+
+### User Interface
+- **Login Screen**: Authentication form
+- **Dashboard**: Main user interface with attendance status and map
+- **Attendance History**: Table of past attendance records
+- **Map View**: Interactive map showing office locations and geofences
+
+### Admin Interface
+- **Dashboard**: Overview statistics and recent activity
+- **Users Management**: Create, edit, and delete users
+- **Offices Management**: Manage office locations and geofences
+- **Activity Log**: Track user logins and attendance
+- **Admin Management**: (Super admin only) Manage other admins
+
+## Deployment
+
+### Production Deployment Options
+
+#### Option 1: Single Server Deployment
+
+1. **Set up a VPS** (DigitalOcean, AWS EC2, etc.)
+2. **Install dependencies**:
+```bash
+apt update && apt upgrade -y
+apt install -y python3-pip python3-venv postgresql nginx certbot python3-certbot-nginx
+```
+3. **Configure Nginx** as a reverse proxy:
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+    
+    location / {
+        root /var/www/attendance-tracker;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+    
+    location /api/ {
+        proxy_pass http://localhost:8000/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+4. **Set up SSL** with Certbot:
+```bash
+certbot --nginx -d yourdomain.com
+```
+5. **Create a systemd service** for the backend:
+```ini
+[Unit]
+Description=Attendance Tracker API
+After=network.target
+
+[Service]
+User=apiuser
+WorkingDirectory=/path/to/backend
+ExecStart=/path/to/poetry run uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### Option 2: Containerized Deployment (Docker)
+
+1. **Create a Dockerfile for the backend**:
+```dockerfile
+FROM python:3.9-slim
+
+WORKDIR /app
+
+RUN pip install poetry
+
+COPY pyproject.toml poetry.lock* ./
+RUN poetry config virtualenvs.create false && poetry install --no-dev
+
+COPY . .
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+2. **Create a docker-compose.yml file**:
+```yaml
+version: '3'
+
+services:
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+    
+  backend:
+    build: ./backend
+    depends_on:
+      - db
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+  
+  frontend:
+    image: nginx:alpine
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+```
+
+3. **Run with Docker Compose**:
+```bash
+docker-compose up -d
+```
+
+## Troubleshooting
+
+### Common Issues
+
+#### Backend Issues
+- **Database Connection Errors**: Check PostgreSQL credentials and connection settings
+- **Migration Errors**: Ensure database is created before running migrations
+- **Permission Errors**: Verify file permissions for the application directory
+- **JWT Token Issues**: Check SECRET_KEY and token expiration settings
+
+#### Frontend Issues
+- **API Connection Issues**: Verify API_URL in config.js is correct
+- **CORS Errors**: Ensure backend CORS settings include frontend domain
+- **Geolocation Errors**: Browser may require HTTPS for geolocation API
+- **Map Loading Issues**: Check if Leaflet.js CDN is accessible
+
+#### User Management Issues
+- **Admin Creation Failure**: Ensure super admin has proper privileges
+- **User Login Problems**: Verify credentials and user active status
+- **Password Reset**: Super admin can reset user passwords through admin panel
+
+### Debugging Tips
+
+1. **Backend Logs**: Check app logs for detailed error information
+2. **API Documentation**: Review endpoints at `/docs` for correct usage
+3. **Browser Console**: Check for JavaScript errors in browser developer tools
+4. **Database Inspection**: Directly query database to verify data integrity
+
+### Getting Help
+
+If you encounter issues not covered in this documentation:
+1. Check the issue tracker on GitHub
+2. Submit a detailed bug report with steps to reproduce
+3. For security issues, please contact the maintainers directly
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- [FastAPI](https://fastapi.tiangolo.com/) - The web framework used
+- [Leaflet.js](https://leafletjs.com/) - Used for interactive maps
+- [SQLAlchemy](https://www.sqlalchemy.org/) - Database ORM
+- [JWT](https://jwt.io/) - Used for secure authentication
