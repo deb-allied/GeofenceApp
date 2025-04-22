@@ -19,9 +19,7 @@ class Settings(BaseSettings):
 
     # DATABASE
     DATABASE_URL: str = os.getenv(
-        "DATABASE_URL",
-        "mssql+pyodbc://debshishu:00a1238UazL6@AWLARIA01/ARIADATA_10042025"
-        "?driver=ODBC+Driver+17+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes"
+        "DATABASE_URL",""
     )
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
 
