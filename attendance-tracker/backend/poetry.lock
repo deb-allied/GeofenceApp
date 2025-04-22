@@ -44,6 +44,21 @@ test = ["anyio[trio]", "blockbuster (>=1.5.23)", "coverage[toml] (>=7)", "except
 trio = ["trio (>=0.26.1)"]
 
 [[package]]
+name = "asyncodbc"
+version = "0.1.1"
+description = "Forked from aioodbc and make improvement"
+optional = false
+python-versions = ">=3.7,<4.0"
+groups = ["main"]
+files = [
+    {file = "asyncodbc-0.1.1-py3-none-any.whl", hash = "sha256:ce1ba96b4b5b6b37d6c2134c435172c91f05c15c7ce1ec830be2806b6e545442"},
+    {file = "asyncodbc-0.1.1.tar.gz", hash = "sha256:feb0d4bb35e028d37d914b1ddcbd576400be6058bf256bc226793c966f846d54"},
+]
+
+[package.dependencies]
+pyodbc = "*"
+
+[[package]]
 name = "bcrypt"
 version = "4.3.0"
 description = "Modern password hashing for your software and your servers"
@@ -1210,4 +1225,4 @@ standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.5.0)
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "d4a81db782b7f763710cb88bff0f740f4d85801573a7f74dc08688de55b7123b"
+content-hash = "acf7d910b81be44b0a641eab1c59616ec25a98c2a40bdd2c1bc531e3cf531d51"
