@@ -30,6 +30,7 @@ psycopg2-binary = "^2.9.6"
 haversine = "^2.8.0"
 python-dotenv = "^1.0.0"
 pyodbc = "^5.2.0"
+gunicorn = "^23.0.0"
 
 [tool.poetry.group]
 dev = { dependencies = { pytest = "^7.0.0", black = "^23.0.0", isort = "^5.0.0", mypy = "^1.0.0", flake8 = "^6.0.0" } }
