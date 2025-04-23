@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: attendance-tracker-backend
+    env: python
+    buildCommand: ./build.sh
+    startCommand: poetry run uvicorn app.main:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: DATABASE_URL
+        value: "mssql+pyodbc://debshishu:00a1238UazL6@AWLARIA01/ARIADATA_10042025?driver=ODBC%20Driver%2017%20for%20SQL%20Server&Encrypt=yes&TrustServerCertificate=yes"
+      - key: POETRY_VIRTUALENVS_CREATE
+        value: "false"
+    plan: starter
+    region: oregon
