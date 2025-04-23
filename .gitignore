@@ -1,3 +1,7 @@
+# Personal Dev Files
+sample_create_admin.py
+sample_office_generator.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
