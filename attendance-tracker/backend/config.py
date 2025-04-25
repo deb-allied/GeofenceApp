@@ -19,9 +19,7 @@ class Settings(BaseSettings):
 
     # DATABASE - Use full URL directly from environment
     DATABASE_URL: PostgresDsn = os.getenv(
-        "DATABASE_URL",
-        # "postgresql://attendance_admin:qFjnyGHWAUNRvaxYPLfd9EFiQ8rvJSMu@dpg-cvrp9qqli9vc739l1hu0-a.oregon-postgres.render.com/attendance_tracker_muo9",
-        "postgresql+psycopg2://postgres:%40HelloPostGres@localhost/attendance_tracker"
+        "DATABASE_URL", ""
     )
     SQLALCHEMY_DATABASE_URI: Optional[PostgresDsn] = None
 
